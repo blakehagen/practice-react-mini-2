@@ -1,7 +1,7 @@
 var React = require('react');
-var AddChat = require('./AddChat');
-var ChatList = require('./ChatList');
-
+var AddChat = require('./AddChat.jsx');
+var ChatList = require('./ChatList.jsx');
+console.log('hello world!');
 var App = React.createClass({
   render: function(){
     return (
