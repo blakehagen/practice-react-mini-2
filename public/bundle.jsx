@@ -18935,14 +18935,56 @@
 	var React = __webpack_require__(1);
 	var $ = __webpack_require__(149);
 
+
 	var AddChat = React.createClass({displayName: "AddChat",
-	  render: function(){
-	    return (
-	      React.createElement("div", {className: "form-group"}
-	      )
-	    )
-	  }
+	    propTypes: {
+	        url: React.PropTypes.string.isRequired
+	    },
+	    
+	    getDefaultProps: function(){
+	        return {
+	            url: 'https://api.parse.com/1/classes/chat'
+	        }
+	    },
+	    
+	    addChat: function(){
+	        $.ajax({
+	            url: this.props.url,
+	            type: 'POST',
+	            data: JSON.stringify({text: this.refs.newChatInput.getDOMNode().value}),
+	            beforeSend: function(request){
+	                request.setRequestHeader("X-Parse-Application-Id", 'CD2pHq4pp9LvWkv2eK8ULitdsoR8T4Y4hLXfmcLw');
+	                request.setRequestHeader("X-Parse-REST-API-Key", 'FCnu3R5xXvBcbLi1RyIbGODirYuIbXmhKkwX4ndl');
+	                request.setRequestHeader("Content-Type", 'application/json');
+	            },
+	            error: function(){
+	                console.log('error on post');
+	            },
+	            success: function(){
+	                console.log('successful post');
+	            }.bind(this)
+	        })
+	    },
+	    
+	    handleSubmit: function(e){
+	        if(e.keyCode === 13){
+	            this.addChat();
+	        }
+	    },
+
+	    render: function(){
+	        return (
+	        React.createElement("div", {className: "form-group"}, 
+	            React.createElement("input", {
+	                type: "text", 
+	                ref: "newChatInput", placeholder: "Compose Message", 
+	                className: "form-control", 
+	                onKeyDown: this.handleSubmit})
+	        )
+	        )
+	    }
 	});
+
 
 	module.exports = AddChat;
 
@@ -28170,12 +28212,64 @@
 	var $ = __webpack_require__(149);
 
 	var ChatList = React.createClass({displayName: "ChatList",
-	  render: function(){
-	    return (
-	      React.createElement("ul", {className: "list-group"}
-	      )
-	    )
-	  }
+	    getInitialState: function(){
+	        return {
+	            chats: []
+	        }
+	    },
+	    
+	    propTypes: {
+	        url: React.PropTypes.string.isRequired
+	    },
+	    
+	    getDefaultProps: function(){
+	        return {
+	            url: 'https://api.parse.com/1/classes/chat'
+	        };
+	    },
+	    
+	    getChats: function(){
+	        $.ajax({
+	            url: this.props.url,
+	            type: 'GET',
+	            beforeSend: function(request){
+	                request.setRequestHeader("X-Parse-Application-Id",'CD2pHq4pp9LvWkv2eK8ULitdsoR8T4Y4hLXfmcLw');
+	                request.setRequestHeader("X-Parse-REST-API-Key", 'FCnu3R5xXvBcbLi1RyIbGODirYuIbXmhKkwX4ndl');
+	                request.setRequestHeader("Content-Type", 'application/json');  
+	            },
+	            error: function(data){
+	                console.log('There was an error getting the chats');
+	            },
+	            success: function(data){
+	                if(this.isMounted()){
+	                    this.setState({
+	                        chats: data.results
+	                    });
+	                }
+	            }.bind(this)
+	        })
+	    },
+	    
+	    componentDidMount: function(){
+	        this.interval = setInterval(function(){
+	            this.getChats();
+	        }.bind(this),1000)
+	    },
+	    
+	    componentWillUnmount: function(){
+	        clearInterval(this.interval);
+	    },
+	    
+	    render: function(){
+	        var list = this.state.chats.map(function(item, index){
+	            return React.createElement("li", {className: "list-group-item", key: item.objectId}, " ", item.text, " ")
+	        });
+	        return (
+	            React.createElement("ul", {className: "list-group"}, 
+	            list
+	            )
+	        )
+	    }
 	});
 
 	module.exports = ChatList;
